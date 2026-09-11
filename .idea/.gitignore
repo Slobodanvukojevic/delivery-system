@@ -1,0 +1,38 @@
+# Java / Maven
+target/
+*.class
+*.jar
+*.war
+*.log
+.mvn/
+mvnw
+mvnw.cmd
+
+# IntelliJ
+.idea/
+*.iml
+*.ipr
+*.iws
+
+# Node (za Angular, kasnije)
+node_modules/
+dist/
+.angular/
+npm-debug.log
+
+# Android (kasnije)
+.gradle/
+local.properties
+*.apk
+*.aab
+build/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Env / Secrets
+.env
+*.env.local
+application-local.properties
+firebase-service-account.json
