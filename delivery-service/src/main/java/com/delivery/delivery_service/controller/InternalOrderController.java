@@ -1,5 +1,6 @@
 package com.delivery.delivery_service.controller;
 
+import com.delivery.delivery_service.dto.OrderStatsResponse;
 import com.delivery.delivery_service.service.OrderService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -23,5 +24,12 @@ public class InternalOrderController {
         String status = body.get("status");
         orderService.updateStatus(id, status);
         return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/stats")
+    public ResponseEntity<OrderStatsResponse> getStats(
+            @RequestParam Long branchId,
+            @RequestParam String date) {
+        return ResponseEntity.ok(orderService.getStatsForBranch(branchId, date));
     }
 }

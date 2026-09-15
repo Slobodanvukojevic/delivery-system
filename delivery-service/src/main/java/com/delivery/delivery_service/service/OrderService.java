@@ -3,8 +3,11 @@ package com.delivery.delivery_service.service;
 import com.delivery.delivery_service.dto.AssignLockerResponse;
 import com.delivery.delivery_service.dto.CreateOrderRequest;
 import com.delivery.delivery_service.dto.OrderResponse;
+import com.delivery.delivery_service.dto.OrderStatsResponse;
 import com.delivery.delivery_service.entity.*;
 import com.delivery.delivery_service.exception.*;
+import com.delivery.delivery_service.feign.NotificationClient;
+import com.delivery.delivery_service.feign.SendNotificationRequest;
 import com.delivery.delivery_service.repository.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,6 +29,7 @@ public class OrderService {
     private static final double PRICE_PER_KG = 50.0;
     private static final int RETURN_LOCKER_DAYS = 3;
     private static final int RETURN_BRANCH_DAYS = 10;
+    private final NotificationClient notificationClient;
 
     private static final Set<OrderStatus> FINAL_STATUSES = Set.of(
             OrderStatus.DELIVERED,
@@ -38,17 +42,20 @@ public class OrderService {
     private final ParcelLockerRepository lockerRepository;
     private final LockerCompartmentRepository compartmentRepository;
     private final Random random = new Random();
+    private final BranchRepository branchRepository;
+
 
     public OrderService(DeliveryOrderRepository orderRepository,
                         ParcelLockerRepository lockerRepository,
                         LockerCompartmentRepository compartmentRepository,
-                        BranchRepository branchRepository) {
+                        BranchRepository branchRepository,
+                        NotificationClient notificationClient) {
         this.orderRepository = orderRepository;
         this.lockerRepository = lockerRepository;
         this.compartmentRepository = compartmentRepository;
+        this.branchRepository = branchRepository;
+        this.notificationClient = notificationClient;
     }
-
-
 
     public OrderResponse createOrder(CreateOrderRequest request) {
         double price = BASE_PRICE + (PRICE_PER_KG * request.getWeight());
@@ -184,6 +191,8 @@ public class OrderService {
         log.info("Porudzbina {} smestena u paketomat {} sanducic {}. PickupCode: {}",
                 orderId, selectedLocker.getId(), compartment.getCompartmentNumber(), order.getPickupCode());
 
+        notifyStatusChange(order, "LOCKER_ASSIGNED");
+
         return AssignLockerResponse.builder()
                 .orderId(orderId)
                 .lockerId(selectedLocker.getId())
@@ -236,11 +245,12 @@ public class OrderService {
         }
 
         order.setStatus(OrderStatus.PICKED_UP_BY_CUSTOMER);
-        order.setPickupCode(null); // Brisemo kod da ne moze ponovo
+        order.setPickupCode(null);
         order.setDeliveredAt(LocalDateTime.now());
         DeliveryOrder saved = orderRepository.save(order);
 
         log.info("Porudzbina {} preuzeta u poslovnici", order.getId());
+        notifyStatusChange(saved, "DELIVERED");
         return mapToResponse(saved);
     }
 
@@ -274,6 +284,7 @@ public class OrderService {
         DeliveryOrder saved = orderRepository.save(order);
 
         log.info("Porudzbina {} preuzeta iz paketomata", orderId);
+        notifyStatusChange(saved, "DELIVERED");
         return mapToResponse(saved);
     }
 
@@ -306,6 +317,11 @@ public class OrderService {
         DeliveryOrder saved = orderRepository.save(order);
 
         log.info("Porudzbina {} promenila status na {}", orderId, newStatus);
+        if (newStatus == OrderStatus.DELIVERED) {
+            notifyStatusChange(saved, "DELIVERED");
+        } else if (newStatus == OrderStatus.OUT_FOR_DELIVERY) {
+            notifyStatusChange(saved, "ORDER_STATUS_CHANGED");
+        }
         return mapToResponse(saved);
     }
 
@@ -386,6 +402,67 @@ public class OrderService {
         return String.valueOf(1000 + random.nextInt(9000));
     }
 
+    private void notifyStatusChange(DeliveryOrder order, String notificationType) {
+        try {
+            SendNotificationRequest request = SendNotificationRequest.builder()
+                    .userId(order.getSenderId())
+                    .orderId(order.getId())
+                    .type(notificationType)
+                    .pickupCode(order.getPickupCode())
+                    .phoneLocale("sr")
+                    .customMessage("Status porudzbine: " + order.getStatus())
+                    .build();
+            notificationClient.sendNotification(request);
+            log.info("Notifikacija poslata za order {}", order.getId());
+        } catch (Exception e) {
+            log.warn("Greska pri slanju notifikacije za order {}: {}", order.getId(), e.getMessage());
+        }
+    }
+
+    public OrderStatsResponse getStatsForBranch(Long branchId, String dateStr) {
+        java.time.LocalDate date;
+        try {
+            date = java.time.LocalDate.parse(dateStr);
+        } catch (Exception e) {
+            date = java.time.LocalDate.now();
+        }
+
+        java.time.LocalDateTime startOfDay = date.atStartOfDay();
+        java.time.LocalDateTime endOfDay = date.plusDays(1).atStartOfDay();
+
+        List<DeliveryOrder> allOrders = orderRepository.findBySelectedBranchId(branchId);
+
+        int received = 0, delivered = 0, returned = 0;
+        java.math.BigDecimal revenue = java.math.BigDecimal.ZERO;
+
+        for (DeliveryOrder order : allOrders) {
+            if (order.getCreatedAt() != null
+                    && !order.getCreatedAt().isBefore(startOfDay)
+                    && order.getCreatedAt().isBefore(endOfDay)) {
+                received++;
+            }
+            if (order.getDeliveredAt() != null
+                    && !order.getDeliveredAt().isBefore(startOfDay)
+                    && order.getDeliveredAt().isBefore(endOfDay)) {
+                delivered++;
+                if (order.getPrice() != null) {
+                    revenue = revenue.add(java.math.BigDecimal.valueOf(order.getPrice()));
+                }
+            }
+            if (order.getStatus() == OrderStatus.RETURN_TO_SENDER) {
+                returned++;
+            }
+        }
+
+        return OrderStatsResponse.builder()
+                .branchId(branchId)
+                .date(dateStr)
+                .ordersReceived(received)
+                .ordersDelivered(delivered)
+                .ordersReturned(returned)
+                .totalRevenue(revenue)
+                .build();
+    }
     private OrderResponse mapToResponse(DeliveryOrder order) {
         return OrderResponse.builder()
                 .id(order.getId())
