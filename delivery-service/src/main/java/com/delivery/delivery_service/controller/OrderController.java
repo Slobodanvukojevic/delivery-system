@@ -27,6 +27,14 @@ public class OrderController {
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
+    @GetMapping("/my")
+    public ResponseEntity<List<OrderResponse>> getMyOrders() {
+        Long courierId = com.delivery.delivery_service.context.UserContext.getUserId();
+        if (courierId == null) {
+            return ResponseEntity.status(401).build();
+        }
+        return ResponseEntity.ok(orderService.getOrdersByCourier(courierId));
+    }
     @GetMapping
     public ResponseEntity<List<OrderResponse>> getAllOrders(
             @RequestParam(required = false) OrderStatus status) {

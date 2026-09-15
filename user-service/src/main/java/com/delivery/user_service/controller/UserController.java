@@ -24,7 +24,7 @@ public class UserController {
 
     @GetMapping("/me")
     public ResponseEntity<UserResponse> getCurrentUser(@AuthenticationPrincipal Jwt jwt) {
-        Long userId = jwt.getClaim("userId");
+        Long userId = extractUserId(jwt);
         return ResponseEntity.ok(userService.getUserById(userId));
     }
 
@@ -37,7 +37,6 @@ public class UserController {
     public ResponseEntity<List<UserResponse>> getAllUsers(
             @RequestParam(required = false) UserRole role,
             @RequestParam(required = false) Long branchId) {
-
         if (role != null) {
             return ResponseEntity.ok(userService.getUsersByRole(role));
         }
@@ -51,8 +50,7 @@ public class UserController {
     public ResponseEntity<Map<String, String>> updateFcmToken(
             @AuthenticationPrincipal Jwt jwt,
             @RequestBody Map<String, String> body) {
-
-        Long userId = jwt.getClaim("userId");
+        Long userId = extractUserId(jwt);
         String fcmToken = body.get("fcmToken");
         userService.updateFcmToken(userId, fcmToken);
         return ResponseEntity.ok(Map.of("message", "FCM token uspesno azuriran"));
@@ -61,5 +59,13 @@ public class UserController {
     @GetMapping("/{id}/activity")
     public ResponseEntity<List<UserActivityLog>> getUserActivity(@PathVariable Long id) {
         return ResponseEntity.ok(userService.getUserActivity(id));
+    }
+
+    private Long extractUserId(Jwt jwt) {
+        Object userId = jwt.getClaim("userId");
+        if (userId instanceof Number) {
+            return ((Number) userId).longValue();
+        }
+        throw new RuntimeException("userId claim nije pronadjen u tokenu");
     }
 }

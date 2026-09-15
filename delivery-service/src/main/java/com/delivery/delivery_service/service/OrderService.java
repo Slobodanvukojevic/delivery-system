@@ -419,6 +419,11 @@ public class OrderService {
         }
     }
 
+    public List<OrderResponse> getOrdersByCourier(Long courierId) {
+        return orderRepository.findByAssignedCourierId(courierId).stream()
+                .map(this::mapToResponse)
+                .collect(Collectors.toList());
+    }
     public OrderStatsResponse getStatsForBranch(Long branchId, String dateStr) {
         java.time.LocalDate date;
         try {
