@@ -1,0 +1,242 @@
+
+
+services:
+
+
+
+  eureka-server:
+    build: ./eureka-server
+    container_name: eureka-server
+    ports:
+      - "8761:8761"
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+    networks:
+      - delivery-net
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:8761/actuator/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
+  config-server:
+    build: ./config-server
+    container_name: config-server
+    ports:
+      - "8888:8888"
+    depends_on:
+      - eureka-server
+    networks:
+      - delivery-net
+
+  api-gateway:
+    build: ./api-gateway
+    container_name: api-gateway
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+    depends_on:
+      - eureka-server
+      - config-server
+    networks:
+      - delivery-net
+
+
+
+  user-service:
+    build: ./user-service
+    container_name: user-service
+    ports:
+      - "8082:8082"
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+    depends_on:
+      mysql-user:
+        condition: service_healthy
+      eureka-server:
+        condition: service_healthy
+    networks:
+      - delivery-net
+
+  delivery-service:
+    build: ./delivery-service
+    container_name: delivery-service
+    ports:
+      - "8081:8081"
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+    depends_on:
+      mysql-delivery:
+        condition: service_healthy
+      eureka-server:
+        condition: service_healthy
+    networks:
+      - delivery-net
+
+  payment-service:
+    build: ./payment-service
+    container_name: payment-service
+    ports:
+      - "8083:8083"
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+    depends_on:
+      mysql-payment:
+        condition: service_healthy
+      eureka-server:
+        condition: service_healthy
+    networks:
+      - delivery-net
+
+  notification-service:
+    build: ./notification-service
+    container_name: notification-service
+    ports:
+      - "8084:8084"
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+    depends_on:
+      mysql-notification:
+        condition: service_healthy
+      eureka-server:
+        condition: service_healthy
+      mailhog:
+        condition: service_started
+    networks:
+      - delivery-net
+
+  report-service:
+    build: ./report-service
+    container_name: report-service
+    ports:
+      - "8086:8086"
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+    depends_on:
+      mysql-report:
+        condition: service_healthy
+      eureka-server:
+        condition: service_healthy
+    networks:
+      - delivery-net
+
+
+
+  mysql-user:
+    image: mysql:8.0
+    container_name: mysql-user
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: user_db
+    ports:
+      - "3306:3306"
+    volumes:
+      - user_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-proot"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    networks:
+      - delivery-net
+
+  mysql-delivery:
+    image: mysql:8.0
+    container_name: mysql-delivery
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: delivery_db
+    ports:
+      - "3307:3306"
+    volumes:
+      - delivery_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-proot"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    networks:
+      - delivery-net
+
+  mysql-payment:
+    image: mysql:8.0
+    container_name: mysql-payment
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: payment_db
+    ports:
+      - "3308:3306"
+    volumes:
+      - payment_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-proot"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    networks:
+      - delivery-net
+
+  mysql-notification:
+    image: mysql:8.0
+    container_name: mysql-notification
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: notification_db
+    ports:
+      - "3309:3306"
+    volumes:
+      - notification_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-proot"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    networks:
+      - delivery-net
+
+  mysql-report:
+    image: mysql:8.0
+    container_name: mysql-report
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: report_db
+    ports:
+      - "3310:3306"
+    volumes:
+      - report_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-proot"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    networks:
+      - delivery-net
+
+
+
+  mailhog:
+    image: mailhog/mailhog
+    container_name: mailhog
+    ports:
+      - "1025:1025"
+      - "8025:8025"
+    networks:
+      - delivery-net
+
+volumes:
+  user_data:
+  delivery_data:
+  payment_data:
+  notification_data:
+  report_data:
+
+networks:
+  delivery-net:
+    driver: bridge
