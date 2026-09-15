@@ -7,6 +7,8 @@ import com.delivery.notification_service.entity.Channel;
 import com.delivery.notification_service.entity.NotificationLog;
 import com.delivery.notification_service.entity.NotificationStatus;
 import com.delivery.notification_service.entity.PushToken;
+import com.delivery.notification_service.feign.UserClient;
+import com.delivery.notification_service.feign.UserResponse;
 import com.delivery.notification_service.repository.NotificationLogRepository;
 import com.delivery.notification_service.repository.PushTokenRepository;
 import org.slf4j.Logger;
@@ -26,47 +28,75 @@ public class NotificationService {
     private final PushService pushService;
     private final NotificationLogRepository logRepository;
     private final PushTokenRepository tokenRepository;
+    private final UserClient userClient;
 
     public NotificationService(EmailService emailService,
                                PushService pushService,
                                NotificationLogRepository logRepository,
-                               PushTokenRepository tokenRepository) {
+                               PushTokenRepository tokenRepository,
+                               UserClient userClient) {
         this.emailService = emailService;
         this.pushService = pushService;
         this.logRepository = logRepository;
         this.tokenRepository = tokenRepository;
+        this.userClient = userClient;
     }
 
     public NotificationResponse sendNotification(SendNotificationRequest request) {
         String language = detectLanguage(request.getPhoneLocale());
-
-        // Za sada, saljemo samo push (email zahteva email adresu korisnika, koju nemamo u requestu)
-        // U pravoj app, dobavili bismo email iz User Service-a preko Feign-a.
-
         String title = buildTitle(request.getType());
         String body = buildBody(request, language);
 
+        // 1. Push (simulacija, log u konzoli)
         boolean pushSent = pushService.sendPush(request.getUserId(), title, body);
 
-        // Logujemo notifikaciju
+        // 2. Email - dohvati email adresu iz User Service-a preko Feign-a
+        boolean emailSent = false;
+        try {
+            UserResponse user = userClient.getUserById(request.getUserId());
+            if (user != null && user.getEmail() != null) {
+                Map<String, String> vars = new HashMap<>();
+                vars.put("customerName", user.getFullName() != null ? user.getFullName() : "");
+                vars.put("orderId", request.getOrderId() != null ? request.getOrderId().toString() : "");
+                vars.put("pickupCode", request.getPickupCode() != null ? request.getPickupCode() : "");
+
+                sendEmailNotification(
+                        request.getUserId(),
+                        user.getEmail(),
+                        request.getType().name(),
+                        language,
+                        vars
+                );
+                emailSent = true;
+            }
+        } catch (Exception e) {
+            log.warn("Email nije poslat korisniku {}: {}", request.getUserId(), e.getMessage());
+        }
+
+        // 3. Log
         NotificationLog notifLog = NotificationLog.builder()
                 .userId(request.getUserId())
                 .orderId(request.getOrderId())
                 .type(request.getType())
-                .channel(Channel.PUSH)
-                .status(pushSent ? NotificationStatus.SENT : NotificationStatus.FAILED)
+                .channel(emailSent ? Channel.EMAIL : Channel.PUSH)
+                .status((pushSent || emailSent) ? NotificationStatus.SENT : NotificationStatus.FAILED)
                 .message(title + " - " + body)
                 .build();
         NotificationLog saved = logRepository.save(notifLog);
 
-        log.info("Notifikacija poslata korisniku {} za order {}", request.getUserId(), request.getOrderId());
+        log.info("Notifikacija poslata korisniku {} za order {} (email={}, push={})",
+                request.getUserId(), request.getOrderId(), emailSent, pushSent);
 
         return NotificationResponse.builder()
                 .notificationId(saved.getId())
-                .emailSent(false)
+                .emailSent(emailSent)
                 .pushSent(pushSent)
                 .message("Notifikacija obradjena")
                 .build();
+    }
+
+    public void sendTestEmail(String to, String subject, String body) {
+        emailService.sendEmail(to, subject, body);
     }
 
     public void sendEmailNotification(Long userId, String email, String code, String language, Map<String, String> vars) {
@@ -89,10 +119,7 @@ public class NotificationService {
     }
 
     public PushToken registerToken(RegisterTokenRequest request) {
-        // Ako vec postoji, azuriraj
-        tokenRepository.findByUserId(request.getUserId()).ifPresent(existing -> {
-            tokenRepository.delete(existing);
-        });
+        tokenRepository.findByUserId(request.getUserId()).ifPresent(tokenRepository::delete);
 
         PushToken token = PushToken.builder()
                 .userId(request.getUserId())

@@ -5,7 +5,6 @@ import com.delivery.notification_service.dto.RegisterTokenRequest;
 import com.delivery.notification_service.dto.SendNotificationRequest;
 import com.delivery.notification_service.entity.NotificationLog;
 import com.delivery.notification_service.entity.PushToken;
-import com.delivery.notification_service.service.EmailService;
 import com.delivery.notification_service.service.NotificationService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -55,4 +54,13 @@ public class NotificationController {
         return ResponseEntity.ok(notificationService.getUserNotifications(userId));
     }
 
+    @PostMapping("/test-email")
+    public ResponseEntity<Map<String, String>> testEmail(@RequestBody Map<String, String> body) {
+        notificationService.sendTestEmail(
+                body.get("to"),
+                body.getOrDefault("subject", "Test"),
+                body.getOrDefault("body", "Ovo je test.")
+        );
+        return ResponseEntity.ok(Map.of("message", "Email poslat"));
+    }
 }
