@@ -36,7 +36,7 @@ public class ReportService {
         this.deliveryClient = deliveryClient;
     }
 
-    // ============ DNEVNA AGREGACIJA ============
+    //DNEVNA
 
     @Transactional
     public DailySummary generateDailySummary(Long branchId, LocalDate date) {
@@ -73,7 +73,7 @@ public class ReportService {
         return dailySummaryRepository.save(summary);
     }
 
-    // ============ MESECNI IZVESTAJ ============
+    //MJESECNI
 
     public MonthlyReportResponse getMonthlyReport(Long branchId, String month) {
         YearMonth ym = YearMonth.parse(month);
@@ -111,7 +111,7 @@ public class ReportService {
                 .build();
     }
 
-    // ============ UČINAK KURIRA ============
+    //UČINAK KURIRA
 
     public CourierPerformanceResponse getCourierPerformance(Long courierId, String month) {
         CourierPerformance perf = courierPerformanceRepository
@@ -141,7 +141,6 @@ public class ReportService {
                 .collect(Collectors.toList());
     }
 
-    // ============ MANUALNO GENERISANJE ============
 
     @Transactional
     public ReportRequest generateReportRequest(GenerateReportRequest request, Long requestedBy) {

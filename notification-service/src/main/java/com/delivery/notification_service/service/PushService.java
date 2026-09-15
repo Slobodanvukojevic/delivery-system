@@ -26,7 +26,7 @@ public class PushService {
             return false;
         }
 
-        // SIMULACIJA: umesto pravog Firebase poziva, samo logujemo
+
         String fcmToken = tokenOpt.get().getFcmToken();
         log.info("========== PUSH NOTIFIKACIJA ==========");
         log.info("User ID: {}", userId);

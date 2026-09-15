@@ -9,3 +9,23 @@ Images:
 - https://hub.docker.com/r/slobodanvukojevic/delivery-payment-service
 - https://hub.docker.com/r/slobodanvukojevic/delivery-notification-service
 - https://hub.docker.com/r/slobodanvukojevic/delivery-report-service
+
+Pokretanje sistema:
+docker-compose up --build
+
+Konfiguracija:
+- 5 MySQL baza (svaka u svom kontejneru)
+- 8 Spring Boot mikroservisa
+- 1 MailHog (email testing)
+
+Portovi:
+- API Gateway: 8080
+- User Service: 8082
+- Delivery Service: 8081
+- Payment Service: 8083
+- Notification Service: 8084
+- Report Service: 8086
+- Eureka Dashboard: 8761
+- Config Server: 8888
+- MailHog UI: 8025
+- MySQL baze: 3306, 3307, 3308, 3309, 3310

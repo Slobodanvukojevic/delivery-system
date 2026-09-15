@@ -22,7 +22,6 @@ public class DailyReportScheduler {
         this.reportService = reportService;
     }
 
-    // Svaki dan u 1h ujutru. Za demo: svakih 5 minuta.
     @Scheduled(cron = "${report.daily-cron:0 0 1 * * *}")
     public void generateDailyReports() {
         log.info("Pokrecem generisanje dnevnih izvestaja za dan {}", LocalDate.now());

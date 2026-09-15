@@ -47,10 +47,10 @@ public class NotificationService {
         String title = buildTitle(request.getType());
         String body = buildBody(request, language);
 
-        // 1. Push (simulacija, log u konzoli)
+
         boolean pushSent = pushService.sendPush(request.getUserId(), title, body);
 
-        // 2. Email - dohvati email adresu iz User Service-a preko Feign-a
+
         boolean emailSent = false;
         try {
             UserResponse user = userClient.getUserById(request.getUserId());
@@ -73,7 +73,7 @@ public class NotificationService {
             log.warn("Email nije poslat korisniku {}: {}", request.getUserId(), e.getMessage());
         }
 
-        // 3. Log
+
         NotificationLog notifLog = NotificationLog.builder()
                 .userId(request.getUserId())
                 .orderId(request.getOrderId())
