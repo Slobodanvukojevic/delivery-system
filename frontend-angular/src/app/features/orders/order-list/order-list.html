@@ -1,0 +1,58 @@
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2>Porudzbine</h2>
+        <div>
+            <a routerLink="/orders/pickup" class="btn btn-outline-secondary me-2">
+                Predaja paketa
+            </a>
+            <a routerLink="/orders/create" class="btn btn-primary">
+                Nova porudzbina
+            </a>
+        </div>
+    </div>
+
+    <div class="card p-3 mb-3">
+        <div class="row">
+            <div class="col-md-4">
+                <label class="form-label">Status</label>
+                <select class="form-control" [(ngModel)]="odabraniStatus" (change)="primeniFiltere()">
+                    <option value="">Svi statusi</option>
+                    @for (s of statusi; track s) {
+                        <option [value]="s">{{ s | orderStatus }}</option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">Pretraga</label>
+                <input
+                    type="text"
+                    class="form-control"
+                    placeholder="Pretrazi po imenu, telefonu ili ID-u..."
+                    [(ngModel)]="pretraga"
+                    (input)="primeniFiltere()"
+                />
+            </div>
+            <div class="col-md-2 d-flex align-items-end">
+                <button class="btn btn-outline-secondary w-100" (click)="resetujFiltere()">
+                    Resetuj
+                </button>
+            </div>
+        </div>
+    </div>
+
+    @if (loading) {
+        <div class="alert alert-info">Ucitavanje...</div>
+    }
+
+    @if (errorMessage) {
+        <div class="alert alert-danger">{{ errorMessage }}</div>
+    }
+
+    @if (!loading && !errorMessage) {
+        @for (o of prikazanePorudzbine; track o.id) {
+            <app-order-card [order]="o" (detalji)="prikaziDetalje($event)"></app-order-card>
+        } @empty {
+            <div class="alert alert-info">Nema porudzbina koje odgovaraju filterima.</div>
+        }
+    }
+</div>

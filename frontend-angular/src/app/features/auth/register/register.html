@@ -1,0 +1,83 @@
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-5">
+            <div class="card p-4">
+                <h3 class="fw-bold mb-4">Registracija</h3>
+
+                @if (message) {
+                    <div class="alert alert-danger">{{ message }}</div>
+                }
+
+                <form #registerForma="ngForm" (ngSubmit)="register(registerForma)">
+                    <div class="mb-3">
+                        <label for="fullName" class="form-label">Ime i prezime</label>
+                        <input
+                            id="fullName"
+                            type="text"
+                            class="form-control"
+                            name="fullName"
+                            ngModel
+                            required
+                            minlength="3"
+                            #fullNameInput="ngModel"
+                        />
+                        @if (fullNameInput.invalid && fullNameInput.touched) {
+                            <span class="text-danger">Ime i prezime su obavezni (min. 3 karaktera)</span>
+                        }
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="email" class="form-label">Email</label>
+                        <input
+                            id="email"
+                            type="email"
+                            class="form-control"
+                            name="email"
+                            ngModel
+                            required
+                            email
+                            #emailInput="ngModel"
+                        />
+                        @if (emailInput.invalid && emailInput.touched) {
+                            <span class="text-danger">Email je obavezan i mora biti validan</span>
+                        }
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="password" class="form-label">Lozinka</label>
+                        <input
+                            id="password"
+                            type="password"
+                            class="form-control"
+                            name="password"
+                            ngModel
+                            required
+                            minlength="6"
+                            #passwordInput="ngModel"
+                        />
+                        @if (passwordInput.invalid && passwordInput.touched) {
+                            <span class="text-danger">Lozinka mora imati najmanje 6 karaktera</span>
+                        }
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="role" class="form-label">Uloga</label>
+                        <select id="role" class="form-control" name="role" ngModel required>
+                            <option value="BRANCH_WORKER">Radnik u poslovnici</option>
+                            <option value="COURIER">Kurir</option>
+                            <option value="ADMIN">Administrator</option>
+                        </select>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100" [disabled]="registerForma.invalid">
+                        Registruj se
+                    </button>
+                </form>
+
+                <p class="mt-3 mb-0 text-center">
+                    Vec imate nalog? <a routerLink="/login">Prijavite se</a>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>

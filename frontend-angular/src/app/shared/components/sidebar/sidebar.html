@@ -1,0 +1,45 @@
+<div class="bg-light p-3" style="min-height: calc(100vh - 56px);">
+    <ul class="nav flex-column">
+        <li class="nav-item">
+            <a class="nav-link" routerLink="/dashboard" routerLinkActive="active fw-bold">
+                Dashboard
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" routerLink="/orders" routerLinkActive="active fw-bold">
+                Porudzbine
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" routerLink="/orders/create" routerLinkActive="active fw-bold">
+                Nova porudzbina
+            </a>
+        </li>
+
+        @if (role === 'ADMIN' || role === 'BRANCH_WORKER') {
+            <li class="nav-item">
+                <a class="nav-link" routerLink="/branches" routerLinkActive="active fw-bold">
+                    Poslovnice
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" routerLink="/lockers" routerLinkActive="active fw-bold">
+                    Paketomati
+                </a>
+            </li>
+        }
+
+        @if (role === 'ADMIN') {
+            <li class="nav-item">
+                <a class="nav-link" routerLink="/couriers" routerLinkActive="active fw-bold">
+                    Kuriri
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" routerLink="/reports" routerLinkActive="active fw-bold">
+                    Izvestaji
+                </a>
+            </li>
+        }
+    </ul>
+</div>

@@ -1,0 +1,82 @@
+<div class="container mt-4">
+    <h1 class="mb-4">Dobrodosli, {{ korisnik?.fullName }}</h1>
+
+    <div class="row">
+        <div class="col-md-3">
+            <div class="card p-3 mb-3">
+                <h6 class="text-muted mb-2">Ukupno porudzbina</h6>
+                <h3 class="mb-0">{{ ukupno }}</h3>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card p-3 mb-3">
+                <h6 class="text-muted mb-2">Isporuceno</h6>
+                <h3 class="mb-0 text-success">{{ isporuceno }}</h3>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card p-3 mb-3">
+                <h6 class="text-muted mb-2">Na cekanju</h6>
+                <h3 class="mb-0 text-warning">{{ naCekanju }}</h3>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card p-3 mb-3">
+                <h6 class="text-muted mb-2">Ukupna zarada</h6>
+                <h3 class="mb-0">{{ ukupnaZarada | number:'1.0-0' }} RSD</h3>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card p-3 mb-3">
+                <h6 class="text-muted mb-2">Poslovnice</h6>
+                <h3 class="mb-0">{{ brojPoslovnica }}</h3>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card p-3 mb-3">
+                <h6 class="text-muted mb-2">Paketomati</h6>
+                <h3 class="mb-0">{{ brojPaketomata }}</h3>
+            </div>
+        </div>
+    </div>
+
+    <div class="card mt-3">
+        <div class="card-body">
+            <h5 class="fw-bold mb-3">Poslednje porudzbine</h5>
+
+            <table class="table table-striped mb-0">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Primalac</th>
+                        <th>Status</th>
+                        <th>Cena</th>
+                        <th>Datum</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @for (o of poslednjePorudzbine; track o.id) {
+                        <tr>
+                            <td>
+                                <a [routerLink]="['/orders', o.id]">#{{ o.id }}</a>
+                            </td>
+                            <td>{{ o.customerName }}</td>
+                            <td>{{ o.status | orderStatus }}</td>
+                            <td>{{ o.price | number:'1.0-0' }} RSD</td>
+                            <td>{{ o.createdAt | date:'dd.MM.yyyy HH:mm' }}</td>
+                        </tr>
+                    } @empty {
+                        <tr>
+                            <td colspan="5" class="text-center text-muted py-4">
+                                Nema porudzbina.
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

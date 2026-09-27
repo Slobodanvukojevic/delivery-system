@@ -1,0 +1,56 @@
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-5">
+            <div class="card p-4">
+                <h3 class="fw-bold mb-4">Prijava</h3>
+
+                @if (message) {
+                    <div class="alert alert-danger">{{ message }}</div>
+                }
+
+                <form #loginForma="ngForm" (ngSubmit)="login(loginForma)">
+                    <div class="mb-3">
+                        <label for="email" class="form-label">Email</label>
+                        <input
+                            id="email"
+                            type="email"
+                            class="form-control"
+                            name="email"
+                            ngModel
+                            required
+                            email
+                            #emailInput="ngModel"
+                        />
+                        @if (emailInput.invalid && emailInput.touched) {
+                            <span class="text-danger">Email je obavezan i mora biti validan</span>
+                        }
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="password" class="form-label">Lozinka</label>
+                        <input
+                            id="password"
+                            type="password"
+                            class="form-control"
+                            name="password"
+                            ngModel
+                            required
+                            #passwordInput="ngModel"
+                        />
+                        @if (passwordInput.invalid && passwordInput.touched) {
+                            <span class="text-danger">Lozinka je obavezna</span>
+                        }
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100" [disabled]="loginForma.invalid">
+                        Prijavi se
+                    </button>
+                </form>
+
+                <p class="mt-3 mb-0 text-center">
+                    Nemate nalog? <a routerLink="/register">Registrujte se</a>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,24 @@
+<div class="container mt-4">
+    <h2 class="mb-4">Predaja paketa</h2>
+
+    <div class="card p-4">
+        <div class="mb-3">
+            <label class="form-label">Pickup kod</label>
+            <input type="text" class="form-control" [(ngModel)]="pickupCode" placeholder="npr. 4821" />
+        </div>
+
+        <button class="btn btn-primary" (click)="potvrdiPreuzimanje()" [disabled]="loading">
+            @if (loading) {
+                Predaja u toku...
+            } @else {
+                Potvrdi preuzimanje
+            }
+        </button>
+
+        @if (message) {
+            <div class="alert mt-3" [class.alert-danger]="!uspeh" [class.alert-success]="uspeh">
+                {{ message }}
+            </div>
+        }
+    </div>
+</div>

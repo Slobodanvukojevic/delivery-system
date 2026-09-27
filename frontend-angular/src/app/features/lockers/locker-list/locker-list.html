@@ -1,0 +1,46 @@
+<div class="container mt-4">
+    <h2 class="mb-4">Paketomati</h2>
+
+    <div class="card">
+        <table class="table table-striped mb-0">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Naziv</th>
+                    <th>Adresa</th>
+                    <th>Ukupno mesta</th>
+                    <th>Slobodno</th>
+                    <th>Zauzetost</th>
+                </tr>
+            </thead>
+            <tbody>
+                @for (l of lockers; track l.id) {
+                    <tr>
+                        <td>{{ l.id }}</td>
+                        <td>{{ l.locationName }}</td>
+                        <td>{{ l.address }}</td>
+                        <td>{{ l.totalCompartments }}</td>
+                        <td>{{ l.availableCompartments }}</td>
+                        <td>
+                            <div class="progress" style="height: 20px;">
+                                <div
+                                    class="progress-bar"
+                                    [class]="zauzetostBoja(l)"
+                                    role="progressbar"
+                                    [style.width.%]="zauzetostProcenat(l)">
+                                    {{ zauzetostProcenat(l) }}%
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                } @empty {
+                    <tr>
+                        <td colspan="6" class="text-center text-muted py-4">
+                            Nema paketomata.
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

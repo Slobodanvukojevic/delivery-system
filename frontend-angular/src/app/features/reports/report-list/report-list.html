@@ -1,0 +1,56 @@
+<div class="container mt-4">
+    <h2 class="mb-4">Izvestaji</h2>
+
+    <div class="card p-3 mb-3">
+        <div class="row">
+            <div class="col-md-4">
+                <label class="form-label">Poslovnica</label>
+                <input type="number" class="form-control" [(ngModel)]="branchId" />
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Mesec</label>
+                <input type="text" class="form-control" [(ngModel)]="trenutniMesec" placeholder="2026-09" />
+            </div>
+            <div class="col-md-4 d-flex align-items-end">
+                <button class="btn btn-primary w-100" (click)="ucitajReport()">Prikazi</button>
+            </div>
+        </div>
+    </div>
+
+    @if (loading) {
+        <div class="alert alert-info">Ucitavanje...</div>
+    }
+
+    @if (errorMessage) {
+        <div class="alert alert-warning">{{ errorMessage }}</div>
+    }
+
+    @if (report) {
+        <div class="row">
+            <div class="col-md-3">
+                <div class="card p-3">
+                    <h6 class="text-muted">Ukupno primljeno</h6>
+                    <h3>{{ report.ordersReceived }}</h3>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card p-3">
+                    <h6 class="text-muted">Isporuceno</h6>
+                    <h3 class="text-success">{{ report.ordersDelivered }}</h3>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card p-3">
+                    <h6 class="text-muted">Vraceno</h6>
+                    <h3 class="text-danger">{{ report.ordersReturned }}</h3>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card p-3">
+                    <h6 class="text-muted">Prihod</h6>
+                    <h3>{{ report.totalRevenue | number:'1.0-0' }} RSD</h3>
+                </div>
+            </div>
+        </div>
+    }
+</div>

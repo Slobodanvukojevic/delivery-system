@@ -1,0 +1,42 @@
+<div class="container mt-4">
+    <h2 class="mb-4">Poslovnice</h2>
+
+    <div class="card">
+        <table class="table table-striped mb-0">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Naziv</th>
+                    <th>Adresa</th>
+                    <th>Radno vreme</th>
+                    <th>Telefon</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                @for (b of branches; track b.id) {
+                    <tr>
+                        <td>{{ b.id }}</td>
+                        <td>{{ b.name }}</td>
+                        <td>{{ b.address }}</td>
+                        <td>{{ b.workingHours }}</td>
+                        <td>{{ b.phone }}</td>
+                        <td>
+                            @if (b.active) {
+                                <span class="badge bg-success">Aktivna</span>
+                            } @else {
+                                <span class="badge bg-secondary">Neaktivna</span>
+                            }
+                        </td>
+                    </tr>
+                } @empty {
+                    <tr>
+                        <td colspan="6" class="text-center text-muted py-4">
+                            Nema poslovnica.
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

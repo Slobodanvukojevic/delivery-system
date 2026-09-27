@@ -1,0 +1,16 @@
+<nav class="navbar navbar-dark bg-dark">
+    <div class="container-fluid">
+        <a class="navbar-brand" routerLink="/dashboard">
+            Delivery System
+        </a>
+
+        <div class="d-flex align-items-center">
+            <span class="text-white me-3">
+                {{ korisnik?.fullName }} ({{ korisnik?.role }})
+            </span>
+            <button class="btn btn-outline-light btn-sm" (click)="logout()">
+                Odjavi se
+            </button>
+        </div>
+    </div>
+</nav>

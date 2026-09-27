@@ -1,0 +1,134 @@
+<div class="container mt-4">
+    <button class="btn btn-outline-secondary mb-3" (click)="nazad()">
+        &larr; Nazad na listu
+    </button>
+
+    @if (loading) {
+        <div class="alert alert-info">Ucitavanje...</div>
+    }
+
+    @if (message) {
+        <div class="alert" [class.alert-danger]="!uspeh" [class.alert-success]="uspeh">
+            {{ message }}
+        </div>
+    }
+
+    @if (porudzbina && !loading) {
+        <div class="card p-4">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h3 class="mb-0">Porudzbina #{{ porudzbina.id }}</h3>
+                <span class="badge bg-info fs-6">{{ porudzbina.status | orderStatus }}</span>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6">
+                    <h5 class="fw-bold">Podaci o posiljaocu</h5>
+                    <p class="mb-1"><strong>Ime:</strong> {{ porudzbina.senderName }}</p>
+                    <p class="mb-1"><strong>Telefon:</strong> {{ porudzbina.senderPhone }}</p>
+                    <p class="mb-1"><strong>Adresa preuzimanja:</strong> {{ porudzbina.pickupAddress }}</p>
+                </div>
+
+                <div class="col-md-6">
+                    <h5 class="fw-bold">Podaci o primaocu</h5>
+                    <p class="mb-1"><strong>Ime:</strong> {{ porudzbina.customerName }}</p>
+                    <p class="mb-1"><strong>Telefon:</strong> {{ porudzbina.customerPhone }}</p>
+                    <p class="mb-1"><strong>Adresa dostave:</strong> {{ porudzbina.dropoffAddress }}</p>
+                </div>
+            </div>
+
+            <hr />
+
+            <div class="row">
+                <div class="col-md-4">
+                    <p class="mb-1"><strong>Nacin dostave:</strong></p>
+                    <p>{{ porudzbina.deliveryMethod | deliveryMethod }}</p>
+                </div>
+                <div class="col-md-4">
+                    <p class="mb-1"><strong>Cena:</strong></p>
+                    <p>{{ porudzbina.price | currencyRsd }}</p>
+                </div>
+                <div class="col-md-4">
+                    <p class="mb-1"><strong>Tezina:</strong></p>
+                    <p>{{ porudzbina.weight }} kg</p>
+                </div>
+            </div>
+
+            <div class="row mt-3">
+                <div class="col-md-4">
+                    <p class="mb-1"><strong>Pickup kod:</strong></p>
+                    <p>{{ porudzbina.pickupCode || '-' }}</p>
+                </div>
+                <div class="col-md-4">
+                    <p class="mb-1"><strong>Datum kreiranja:</strong></p>
+                    <p>{{ porudzbina.createdAt | date:'dd.MM.yyyy HH:mm' }}</p>
+                </div>
+                @if (porudzbina.selectedLockerId) {
+                    <div class="col-md-4">
+                        <p class="mb-1"><strong>Paketomat ID:</strong></p>
+                        <p>{{ porudzbina.selectedLockerId }}</p>
+                    </div>
+                }
+            </div>
+
+            <hr />
+
+            <h5 class="fw-bold mb-3">Akcije</h5>
+
+            <div class="d-flex flex-wrap gap-2">
+                @if (akcijaLoading) {
+                    <span class="text-muted">Obrada...</span>
+                }
+
+                @if (!akcijaLoading) {
+
+                    @if (porudzbina.status === 'PENDING') {
+                        <button class="btn btn-primary" (click)="acceptOrder()">
+                            Prihvati u poslovnici
+                        </button>
+                    }
+
+                    @if (porudzbina.status === 'ACCEPTED_AT_BRANCH' && porudzbina.deliveryMethod === 'LOCKER_PICKUP') {
+                        <button class="btn btn-primary" (click)="assignLocker()">
+                            Dodeli paketomat
+                        </button>
+                    }
+
+                    @if (porudzbina.status === 'ACCEPTED_AT_BRANCH' && porudzbina.deliveryMethod === 'BRANCH_PICKUP') {
+                        <button class="btn btn-primary" (click)="markReadyForPickup()">
+                            Spremno za preuzimanje
+                        </button>
+                    }
+
+                    @if (porudzbina.status === 'ACCEPTED_AT_BRANCH' && porudzbina.deliveryMethod === 'HOME_DELIVERY') {
+                        <button class="btn btn-primary" (click)="markInTransit()">
+                            Preuzeto od kurira (u transportu)
+                        </button>
+                    }
+
+                    @if (porudzbina.status === 'IN_TRANSIT') {
+                        <button class="btn btn-primary" (click)="markOutForDelivery()">
+                            Na dostavi
+                        </button>
+                    }
+
+                    @if (porudzbina.status === 'OUT_FOR_DELIVERY') {
+                        <button class="btn btn-success" (click)="markDelivered()">
+                            Isporuceno
+                        </button>
+                    }
+
+                    @if (porudzbina.status === 'PLACED_IN_LOCKER' || porudzbina.status === 'READY_FOR_BRANCH_PICKUP') {
+                        <a routerLink="/orders/pickup" class="btn btn-success">
+                            Idi na predaju paketa
+                        </a>
+                    }
+
+                    @if (porudzbina.status === 'DELIVERED' || porudzbina.status === 'PICKED_UP_BY_CUSTOMER' || porudzbina.status === 'RETURN_TO_SENDER' || porudzbina.status === 'CANCELLED') {
+                        <span class="text-muted">Nema dostupnih akcija za ovaj status.</span>
+                    }
+
+                }
+            </div>
+        </div>
+    }
+</div>
