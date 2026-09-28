@@ -190,7 +190,7 @@ fun MapScreen(
                 },
                 modifier = Modifier
                     .align(Alignment.BottomEnd)
-                    .padding(16.dp)
+                    .padding(end = 16.dp, bottom = 120.dp)
             ) {
                 Icon(Icons.Default.MyLocation, contentDescription = "Centriraj")
             }

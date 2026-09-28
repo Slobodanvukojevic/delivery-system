@@ -12,7 +12,6 @@ import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.ShoppingCart
-import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Divider
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -41,7 +40,6 @@ val drawerItems = listOf(
     DrawerItem("Pocetna", "home", Icons.Default.Home),
     DrawerItem("Nova posiljka", "create_order", Icons.Default.ShoppingCart),
     DrawerItem("Moje porudzbine", "my_orders", Icons.Default.List),
-    DrawerItem("Pracenje posiljke", "track_order", Icons.Default.Star),
     DrawerItem("Mapa paketomata", "map", Icons.Default.LocationOn),
     DrawerItem("Cenovnik", "pricing", Icons.Default.List),
     DrawerItem("Profil", "profile", Icons.Default.Person)

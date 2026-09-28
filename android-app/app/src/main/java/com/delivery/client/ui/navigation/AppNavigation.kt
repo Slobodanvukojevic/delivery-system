@@ -17,8 +17,6 @@ import com.delivery.client.ui.screens.order_detail.OrderDetailScreen
 import com.delivery.client.ui.screens.pricing.PricingScreen
 import com.delivery.client.ui.screens.profile.ProfileScreen
 import com.delivery.client.ui.screens.register.RegisterScreen
-import com.delivery.client.ui.screens.select_locker.SelectLockerScreen
-import com.delivery.client.ui.screens.track_order.TrackOrderScreen
 
 @Composable
 fun AppNavigation(windowSizeClass: WindowSizeClass) {
@@ -36,9 +34,7 @@ fun AppNavigation(windowSizeClass: WindowSizeClass) {
         composable("my_orders") { MyOrdersScreen(navController, isTablet) }
         composable("create_order") { CreateOrderScreen(navController) }
         composable("map") { MapScreen(navController) }
-        composable("track_order") { TrackOrderScreen(navController) }
         composable("pricing") { PricingScreen(navController) }
-        composable("select_locker") { SelectLockerScreen(navController) }
         composable("profile") { ProfileScreen(navController) }
         composable(
             route = "order_detail/{id}",

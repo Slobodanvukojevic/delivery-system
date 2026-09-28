@@ -68,12 +68,6 @@ fun ProfileScreen(
                             style = MaterialTheme.typography.headlineSmall,
                             fontWeight = FontWeight.Bold
                         )
-                        Spacer(modifier = Modifier.height(4.dp))
-                        Text(
-                            text = "Rola: ${state.role}",
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.primary
-                        )
                     }
                 }
 
@@ -94,7 +88,7 @@ fun ProfileScreen(
                         Spacer(modifier = Modifier.height(8.dp))
                         ProfilRed("Telefon", state.phone)
                         Spacer(modifier = Modifier.height(8.dp))
-                        ProfilRed("Rola", state.role)
+                        ProfilRed("Uloga", state.role)
                     }
                 }
 

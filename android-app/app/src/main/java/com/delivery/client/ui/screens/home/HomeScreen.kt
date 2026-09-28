@@ -165,25 +165,6 @@ fun HomeScreen(
                 Spacer(modifier = Modifier.height(16.dp))
 
                 Button(
-                    onClick = { navController.navigate("track_order") },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(60.dp),
-                    elevation = ButtonDefaults.buttonElevation(
-                        defaultElevation = 6.dp,
-                        pressedElevation = 2.dp
-                    )
-                ) {
-                    Text(
-                        text = "Pracenje posiljke",
-                        style = MaterialTheme.typography.titleMedium,
-                        fontSize = 17.sp
-                    )
-                }
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                Button(
                     onClick = { navController.navigate("my_orders") },
                     modifier = Modifier
                         .fillMaxWidth()
