@@ -7,11 +7,7 @@ plugins {
 
 android {
     namespace = "com.delivery.client"
-    compileSdk {
-        version = release(36) {
-            minorApiLevel = 1
-        }
-    }
+    compileSdk = 37
 
     defaultConfig {
         applicationId = "com.delivery.client"
