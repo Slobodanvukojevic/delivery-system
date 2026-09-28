@@ -25,6 +25,9 @@ interface ApiService {
         @Body request: OpenLockerRequest
     ): OrderDto
 
+    @GET("api/orders/track")
+    suspend fun trackOrdersByCode(@Query("code") code: String): List<OrderDto>
+
     @GET("api/locations/nearby")
     suspend fun getNearbyLocations(
         @Query("lat") lat: Double,

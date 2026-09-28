@@ -24,4 +24,7 @@ interface OrderDao {
 
     @Query("DELETE FROM cached_orders")
     suspend fun clearAll()
+
+    @Query("SELECT * FROM cached_orders")
+    suspend fun getAllOrdersSync(): List<CachedOrderEntity>
 }

@@ -49,6 +49,9 @@ class LoginViewModel @Inject constructor(
             result.fold(
                 onSuccess = {
                     _state.value = _state.value.copy(isLoading = false, success = true)
+                    viewModelScope.launch {
+                        authRepository.registerFcmToken()
+                    }
                 },
                 onFailure = { e ->
                     _state.value = _state.value.copy(

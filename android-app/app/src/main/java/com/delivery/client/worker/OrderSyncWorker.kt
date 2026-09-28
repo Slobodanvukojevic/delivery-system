@@ -21,11 +21,11 @@ class OrderSyncWorker @AssistedInject constructor(
         return try {
             val result = orderRepository.syncOrders()
             result.fold(
-                onSuccess = { changedCount ->
-                    if (changedCount > 0) {
+                onSuccess = { syncResult ->
+                    if (syncResult.changedCount > 0) {
                         notificationHelper.showNotification(
                             "Promena statusa porudzbine",
-                            "Imate $changedCount novih promena na vasim porudzbinama"
+                            "Imate ${syncResult.changedCount} novih promena na vasim porudzbinama"
                         )
                     }
                     Result.success()

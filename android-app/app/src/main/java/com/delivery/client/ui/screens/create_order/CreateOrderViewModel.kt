@@ -4,6 +4,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.delivery.client.data.preferences.UserPreferences
 import com.delivery.client.data.remote.dto.CreateOrderRequest
+import com.delivery.client.data.remote.dto.LocationDto
+import com.delivery.client.data.repository.LocationRepository
 import com.delivery.client.data.repository.OrderRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -23,6 +25,10 @@ data class CreateOrderState(
     val deliveryMethod: String = "HOME_DELIVERY",
     val selectedLockerId: Long? = null,
     val selectedLockerName: String = "",
+    val selectedBranchId: Long? = null,
+    val selectedBranchName: String = "",
+    val branches: List<LocationDto> = emptyList(),
+    val isLoadingBranches: Boolean = false,
     val isLoading: Boolean = false,
     val error: String? = null,
     val success: Boolean = false
@@ -31,7 +37,8 @@ data class CreateOrderState(
 @HiltViewModel
 class CreateOrderViewModel @Inject constructor(
     private val orderRepository: OrderRepository,
-    private val userPreferences: UserPreferences
+    private val userPreferences: UserPreferences,
+    private val locationRepository: LocationRepository
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(CreateOrderState())
@@ -42,6 +49,25 @@ class CreateOrderViewModel @Inject constructor(
             val fullName = userPreferences.getFullName() ?: ""
             val phone = userPreferences.getPhone() ?: ""
             _state.value = _state.value.copy(senderName = fullName, senderPhone = phone)
+        }
+        loadBranches()
+    }
+
+    private fun loadBranches() {
+        viewModelScope.launch {
+            _state.value = _state.value.copy(isLoadingBranches = true)
+            val result = locationRepository.getNearbyLocations(44.8178, 20.4569)
+            result.fold(
+                onSuccess = { response ->
+                    _state.value = _state.value.copy(
+                        branches = response.branches,
+                        isLoadingBranches = false
+                    )
+                },
+                onFailure = {
+                    _state.value = _state.value.copy(isLoadingBranches = false)
+                }
+            )
         }
     }
 
@@ -65,18 +91,44 @@ class CreateOrderViewModel @Inject constructor(
         _state.value = _state.value.copy(selectedLockerId = null, selectedLockerName = "")
     }
 
+    fun onBranchSelected(branch: LocationDto) {
+        _state.value = _state.value.copy(
+            selectedBranchId = branch.id,
+            selectedBranchName = branch.name ?: "",
+            dropoffAddress = branch.address ?: ""
+        )
+    }
+
+    fun clearBranch() {
+        _state.value = _state.value.copy(
+            selectedBranchId = null,
+            selectedBranchName = "",
+            dropoffAddress = ""
+        )
+    }
+
     fun submit() {
         val current = _state.value
 
         if (current.senderName.isBlank() || current.senderPhone.isBlank() ||
             current.customerName.isBlank() || current.customerPhone.isBlank() ||
-            current.pickupAddress.isBlank() || current.dropoffAddress.isBlank()) {
+            current.pickupAddress.isBlank()) {
+            _state.value = current.copy(error = "Popunite sva polja")
+            return
+        }
+
+        if (current.deliveryMethod != "BRANCH_PICKUP" && current.dropoffAddress.isBlank()) {
             _state.value = current.copy(error = "Popunite sva polja")
             return
         }
 
         if (current.deliveryMethod == "LOCKER_PICKUP" && current.selectedLockerId == null) {
             _state.value = current.copy(error = "Izaberite paketomat")
+            return
+        }
+
+        if (current.deliveryMethod == "BRANCH_PICKUP" && current.selectedBranchId == null) {
+            _state.value = current.copy(error = "Izaberite poslovnicu")
             return
         }
 
@@ -98,7 +150,8 @@ class CreateOrderViewModel @Inject constructor(
                     pickupAddress = current.pickupAddress,
                     dropoffAddress = current.dropoffAddress,
                     deliveryMethod = current.deliveryMethod,
-                    selectedLockerId = current.selectedLockerId
+                    selectedLockerId = current.selectedLockerId,
+                    selectedBranchId = current.selectedBranchId
                 )
             )
 

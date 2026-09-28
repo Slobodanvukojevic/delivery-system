@@ -23,22 +23,50 @@ class OrderRepository @Inject constructor(
         }
     }
 
-    suspend fun syncOrders(): Result<Int> {
+    suspend fun syncOrders(): Result<SyncResult> {
         return try {
-            val phone = userPreferences.getPhone() ?: return Result.success(0)
-            val response = apiService.trackOrders(phone)
-            val orders = response
+            val phone = userPreferences.getPhone() ?: return Result.success(SyncResult(0, emptyList()))
+            val orders = apiService.trackOrders(phone)
 
-            val entities = orders.map { it.toEntity() }
-            orderDao.insertOrders(entities)
+            val oldOrders = orderDao.getAllOrdersSync()
+            val oldStatusMap = oldOrders.associate { it.id to it.status }
 
-            val changedCount = detectStatusChanges(entities)
 
-            Result.success(changedCount)
+            val changes = mutableListOf<StatusChange>()
+            for (newOrder in orders) {
+                val oldStatus = oldStatusMap[newOrder.id]
+                if (oldStatus != null && oldStatus != newOrder.status) {
+                    changes.add(
+                        StatusChange(
+                            orderId = newOrder.id,
+                            oldStatus = oldStatus,
+                            newStatus = newOrder.status,
+                            customerName = newOrder.customerName
+                        )
+                    )
+                }
+            }
+
+
+            orderDao.insertOrders(orders.map { it.toEntity() })
+
+            Result.success(SyncResult(changes.size, changes))
         } catch (e: Exception) {
             Result.failure(e)
         }
     }
+
+    data class SyncResult(
+        val changedCount: Int,
+        val changes: List<StatusChange>
+    )
+
+    data class StatusChange(
+        val orderId: Long,
+        val oldStatus: String,
+        val newStatus: String,
+        val customerName: String
+    )
 
     suspend fun getMyOrders(): Result<List<OrderDto>> {
         return try {

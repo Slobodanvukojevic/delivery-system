@@ -9,5 +9,6 @@ data class CreateOrderRequest(
     val pickupAddress: String,
     val dropoffAddress: String,
     val deliveryMethod: String,
-    val selectedLockerId: Long? = null
+    val selectedLockerId: Long? = null,
+    val selectedBranchId: Long? = null
 )
