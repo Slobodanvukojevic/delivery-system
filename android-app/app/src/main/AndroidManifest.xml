@@ -21,17 +21,6 @@
         android:theme="@style/Theme.DeliveryClient"
         android:usesCleartextTraffic="true"
         tools:targetApi="31">
-        <service
-            android:name=".notifications.DeliveryFirebaseService"
-            android:exported="false">
-            <intent-filter>
-                <action android:name="com.google.firebase.MESSAGING_EVENT" />
-            </intent-filter>
-        </service>
-
-        <meta-data
-            android:name="com.google.firebase.messaging.default_notification_channel_id"
-            android:value="delivery_channel" />
         <meta-data
             android:name="com.google.android.geo.API_KEY"
             android:value="AIzaSyC-L3y9zQUEaZC-7fSWQqxdtOp2yTE9pac" />

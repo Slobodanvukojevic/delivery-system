@@ -3,7 +3,6 @@ plugins {
     id("org.jetbrains.kotlin.plugin.compose")
     id("com.google.dagger.hilt.android")
     id("com.google.devtools.ksp")
-    id("com.google.gms.google-services")
 }
 
 android {
@@ -32,10 +31,7 @@ android {
 }
 
 dependencies {
-    // Firebase (BoM controls the version of all Firebase libraries)
-    implementation(platform("com.google.firebase:firebase-bom:33.9.0"))
-    implementation("com.google.firebase:firebase-messaging")
-
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.9.0")
     // Compose
     implementation(platform("androidx.compose:compose-bom:2026.02.01"))
     implementation("androidx.compose.ui:ui")

@@ -17,8 +17,6 @@ class UserPreferences(private val context: Context) {
         val FULL_NAME_KEY = stringPreferencesKey("fullName")
         val ROLE_KEY = stringPreferencesKey("role")
         val PHONE_KEY = stringPreferencesKey("phone")
-
-        val FCM_TOKEN_KEY = stringPreferencesKey("fcmToken")
     }
 
     suspend fun saveAuth(token: String, userId: Long, fullName: String, role: String, phone: String) {
@@ -50,16 +48,9 @@ class UserPreferences(private val context: Context) {
         context.dataStore.edit { it.clear() }
     }
 
-    suspend fun saveFcmToken(token: String) {
-        context.dataStore.edit { prefs ->
-            prefs[FCM_TOKEN_KEY] = token
-        }
-    }
     suspend fun updatePhone(newPhone: String) {
         context.dataStore.edit { prefs ->
             prefs[PHONE_KEY] = newPhone
         }
     }
-    suspend fun getFcmToken(): String? =
-        context.dataStore.data.map { it[FCM_TOKEN_KEY] }.first()
 }

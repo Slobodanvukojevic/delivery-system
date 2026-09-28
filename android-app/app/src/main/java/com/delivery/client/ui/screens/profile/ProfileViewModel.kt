@@ -37,14 +37,12 @@ class ProfileViewModel @Inject constructor(
             val role = userPreferences.getRole() ?: "-"
             val userId = userPreferences.getUserId() ?: 0
             val phone = userPreferences.getPhone() ?: "-"
-            val fcmToken = userPreferences.getFcmToken() ?: "-"
 
             _state.value = ProfileState(
                 fullName = fullName,
                 role = role,
                 userId = userId,
                 phone = phone,
-                fcmToken = fcmToken,
                 isLoading = false
             )
         }
