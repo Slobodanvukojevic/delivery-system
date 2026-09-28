@@ -27,7 +27,6 @@ class MapViewModel @Inject constructor(
     private val _state = MutableStateFlow(MapState())
     val state: StateFlow<MapState> = _state.asStateFlow()
 
-    // Beograd centar (default)
     private val defaultLat = 44.8178
     private val defaultLng = 20.4569
 

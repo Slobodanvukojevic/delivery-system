@@ -28,6 +28,7 @@ data class CreateOrderState(
     val selectedBranchId: Long? = null,
     val selectedBranchName: String = "",
     val branches: List<LocationDto> = emptyList(),
+    val lockers: List<LocationDto> = emptyList(),
     val isLoadingBranches: Boolean = false,
     val isLoading: Boolean = false,
     val error: String? = null,
@@ -61,6 +62,7 @@ class CreateOrderViewModel @Inject constructor(
                 onSuccess = { response ->
                     _state.value = _state.value.copy(
                         branches = response.branches,
+                        lockers = response.lockers,
                         isLoadingBranches = false
                     )
                 },
@@ -80,10 +82,11 @@ class CreateOrderViewModel @Inject constructor(
     fun onDropoffAddressChange(v: String) { _state.value = _state.value.copy(dropoffAddress = v, error = null) }
     fun onDeliveryMethodChange(v: String) { _state.value = _state.value.copy(deliveryMethod = v, error = null) }
 
-    fun onLockerSelected(id: Long, name: String) {
+    fun onLockerSelected(locker: LocationDto) {
         _state.value = _state.value.copy(
-            selectedLockerId = id,
-            selectedLockerName = name
+            selectedLockerId = locker.id,
+            selectedLockerName = locker.name ?: "",
+            dropoffAddress = locker.address ?: ""
         )
     }
 
@@ -117,18 +120,18 @@ class CreateOrderViewModel @Inject constructor(
             return
         }
 
-        if (current.deliveryMethod != "BRANCH_PICKUP" && current.dropoffAddress.isBlank()) {
-            _state.value = current.copy(error = "Popunite sva polja")
-            return
-        }
-
-        if (current.deliveryMethod == "LOCKER_PICKUP" && current.selectedLockerId == null) {
-            _state.value = current.copy(error = "Izaberite paketomat")
+        if (current.deliveryMethod == "HOME_DELIVERY" && current.dropoffAddress.isBlank()) {
+            _state.value = current.copy(error = "Unesite adresu dostave")
             return
         }
 
         if (current.deliveryMethod == "BRANCH_PICKUP" && current.selectedBranchId == null) {
             _state.value = current.copy(error = "Izaberite poslovnicu")
+            return
+        }
+
+        if (current.deliveryMethod == "LOCKER_PICKUP" && current.selectedLockerId == null) {
+            _state.value = current.copy(error = "Izaberite paketomat")
             return
         }
 

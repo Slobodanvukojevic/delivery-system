@@ -14,16 +14,25 @@ class AuthRepository @Inject constructor(
     private val userPreferences: UserPreferences
 ) {
 
+    companion object {
+        private const val TAG = "AuthRepository"
+        private const val FALLBACK_PHONE = "+381641234567"
+    }
+
     suspend fun login(email: String, password: String): Result<Unit> {
         return try {
             val response = apiService.login(LoginRequest(email, password))
+
             userPreferences.saveAuth(
                 token = response.token,
                 userId = response.userId,
                 fullName = response.fullName,
                 role = response.role,
-                phone = "+381641234567"
+                phone = FALLBACK_PHONE
             )
+
+            fetchAndSavePhone()
+
             Result.success(Unit)
         } catch (e: Exception) {
             Result.failure(e)
@@ -40,6 +49,7 @@ class AuthRepository @Inject constructor(
             val response = apiService.register(
                 RegisterRequest(email, password, fullName, phone, "CUSTOMER")
             )
+
             userPreferences.saveAuth(
                 token = response.token,
                 userId = response.userId,
@@ -47,9 +57,38 @@ class AuthRepository @Inject constructor(
                 role = response.role,
                 phone = phone
             )
+
+            fetchAndSavePhone()
+
             Result.success(Unit)
         } catch (e: Exception) {
             Result.failure(e)
+        }
+    }
+
+    private suspend fun fetchAndSavePhone() {
+        try {
+            val profile = apiService.getMyProfile()
+            val realPhone = profile.phone
+
+            if (!realPhone.isNullOrBlank()) {
+                userPreferences.updatePhone(realPhone)
+                Log.d(TAG, "Telefon sacuvan iz profila: $realPhone")
+            } else {
+                Log.w(TAG, "Profil nema telefon, ostaje fallback")
+            }
+        } catch (e: Exception) {
+            Log.w(TAG, "Ne mogu da dohvatim profil: ${e.message}. Ostaje fallback.")
+        }
+    }
+
+    suspend fun registerFcmToken() {
+        try {
+            val token = FirebaseMessaging.getInstance().token.await()
+            userPreferences.saveFcmToken(token)
+            Log.d(TAG, "FCM token sacuvan")
+        } catch (e: Exception) {
+            Log.e(TAG, "Greska pri dohvatanju FCM tokena: ${e.message}")
         }
     }
 
@@ -59,15 +98,5 @@ class AuthRepository @Inject constructor(
 
     suspend fun isLoggedIn(): Boolean {
         return !userPreferences.getToken().isNullOrEmpty()
-    }
-
-    suspend fun registerFcmToken() {
-        try {
-            val token = FirebaseMessaging.getInstance().token.await()
-            userPreferences.saveFcmToken(token)
-            Log.d("AuthRepository", "FCM token: $token")
-        } catch (e: Exception) {
-            Log.e("AuthRepository", "Greska pri dohvatanju FCM tokena: ${e.message}")
-        }
     }
 }

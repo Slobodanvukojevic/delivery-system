@@ -18,7 +18,7 @@ class ShakeDetector(
     private var lastShakeTime: Long = 0
 
     companion object {
-        private const val SHAKE_THRESHOLD = 15.0f  // Osetljivost
+        private const val SHAKE_THRESHOLD = 15.0f
         private const val MIN_TIME_BETWEEN_SHAKES = 1500L  // 1.5 sec
     }
 

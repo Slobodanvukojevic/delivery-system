@@ -1,11 +1,35 @@
 package com.delivery.client.ui.screens.create_order
 
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.Button
+import androidx.compose.material3.Card
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.RadioButton
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.TopAppBar
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
@@ -13,8 +37,6 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
-import androidx.navigation.compose.currentBackStackEntryAsState
-import kotlinx.coroutines.flow.MutableStateFlow
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -24,23 +46,8 @@ fun CreateOrderScreen(
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
 
-    // Slusaj rezultat iz SelectLockerScreen
-    val currentEntry by navController.currentBackStackEntryAsState()
-    val savedStateHandle = currentEntry?.savedStateHandle
-
-    val selectedLockerId by (savedStateHandle?.getStateFlow("selectedLockerId", -1L)
-        ?: MutableStateFlow(-1L)).collectAsStateWithLifecycle()
-    val selectedLockerName by (savedStateHandle?.getStateFlow("selectedLockerName", "")
-        ?: MutableStateFlow("")).collectAsStateWithLifecycle()
-
-    LaunchedEffect(selectedLockerId, selectedLockerName) {
-        if (selectedLockerId > 0 && selectedLockerName.isNotEmpty()) {
-            viewModel.onLockerSelected(selectedLockerId, selectedLockerName)
-            // ocisti da ne bi ponovo postavljalo
-            savedStateHandle?.remove<Long>("selectedLockerId")
-            savedStateHandle?.remove<String>("selectedLockerName")
-        }
-    }
+    var branchMenuExpanded by remember { mutableStateOf(false) }
+    var lockerMenuExpanded by remember { mutableStateOf(false) }
 
     LaunchedEffect(state.success) {
         if (state.success) navController.popBackStack()
@@ -120,15 +127,6 @@ fun CreateOrderScreen(
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth()
             )
-            Spacer(modifier = Modifier.height(8.dp))
-
-            OutlinedTextField(
-                value = state.dropoffAddress,
-                onValueChange = viewModel::onDropoffAddressChange,
-                label = { Text("Adresa dostave") },
-                singleLine = true,
-                modifier = Modifier.fillMaxWidth()
-            )
             Spacer(modifier = Modifier.height(12.dp))
 
             Text("Nacin dostave", style = MaterialTheme.typography.bodyMedium)
@@ -155,19 +153,145 @@ fun CreateOrderScreen(
                 )
                 Text("Preuzimanje u paketomatu")
             }
-            if (state.deliveryMethod == "LOCKER_PICKUP") {
-                Spacer(modifier = Modifier.height(12.dp))
 
-                if (state.selectedLockerId != null) {
+            Spacer(modifier = Modifier.height(12.dp))
+
+            if (state.deliveryMethod == "HOME_DELIVERY") {
+                OutlinedTextField(
+                    value = state.dropoffAddress,
+                    onValueChange = viewModel::onDropoffAddressChange,
+                    label = { Text("Adresa dostave") },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+
+            if (state.deliveryMethod == "BRANCH_PICKUP") {
+                Text(
+                    text = "Izaberite poslovnicu",
+                    style = MaterialTheme.typography.bodyMedium
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+
+                if (state.isLoadingBranches) {
+                    CircularProgressIndicator(modifier = Modifier.height(24.dp))
+                } else {
+                    Column {
+                        Button(
+                            onClick = { branchMenuExpanded = true },
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Text(
+                                text = if (state.selectedBranchName.isNotEmpty())
+                                    state.selectedBranchName
+                                else "Odaberi poslovnicu"
+                            )
+                        }
+                        DropdownMenu(
+                            expanded = branchMenuExpanded,
+                            onDismissRequest = { branchMenuExpanded = false }
+                        ) {
+                            state.branches.forEach { branch ->
+                                DropdownMenuItem(
+                                    text = {
+                                        Column {
+                                            Text(branch.name ?: "")
+                                            Text(
+                                                text = branch.address ?: "",
+                                                style = MaterialTheme.typography.bodySmall
+                                            )
+                                        }
+                                    },
+                                    onClick = {
+                                        viewModel.onBranchSelected(branch)
+                                        branchMenuExpanded = false
+                                    }
+                                )
+                            }
+                        }
+                    }
+                }
+
+                if (state.selectedBranchId != null) {
+                    Spacer(modifier = Modifier.height(8.dp))
                     Card(modifier = Modifier.fillMaxWidth()) {
                         Column(modifier = Modifier.padding(12.dp)) {
                             Text(
-                                text = "Izabran paketomat:",
-                                style = MaterialTheme.typography.bodySmall
+                                text = "Adresa poslovnice:",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                             Text(
-                                text = state.selectedLockerName,
-                                style = MaterialTheme.typography.titleMedium
+                                text = state.dropoffAddress,
+                                style = MaterialTheme.typography.bodyMedium
+                            )
+                            Spacer(modifier = Modifier.height(4.dp))
+                            TextButton(onClick = { viewModel.clearBranch() }) {
+                                Text("Promeni poslovnicu")
+                            }
+                        }
+                    }
+                }
+            }
+
+            if (state.deliveryMethod == "LOCKER_PICKUP") {
+                Text(
+                    text = "Izaberite paketomat",
+                    style = MaterialTheme.typography.bodyMedium
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+
+                if (state.isLoadingBranches) {
+                    CircularProgressIndicator(modifier = Modifier.height(24.dp))
+                } else {
+                    Column {
+                        Button(
+                            onClick = { lockerMenuExpanded = true },
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Text(
+                                text = if (state.selectedLockerName.isNotEmpty())
+                                    state.selectedLockerName
+                                else "Odaberi paketomat"
+                            )
+                        }
+                        DropdownMenu(
+                            expanded = lockerMenuExpanded,
+                            onDismissRequest = { lockerMenuExpanded = false }
+                        ) {
+                            state.lockers.forEach { locker ->
+                                DropdownMenuItem(
+                                    text = {
+                                        Column {
+                                            Text(locker.name ?: "")
+                                            Text(
+                                                text = locker.address ?: "",
+                                                style = MaterialTheme.typography.bodySmall
+                                            )
+                                        }
+                                    },
+                                    onClick = {
+                                        viewModel.onLockerSelected(locker)
+                                        lockerMenuExpanded = false
+                                    }
+                                )
+                            }
+                        }
+                    }
+                }
+
+                if (state.selectedLockerId != null) {
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Card(modifier = Modifier.fillMaxWidth()) {
+                        Column(modifier = Modifier.padding(12.dp)) {
+                            Text(
+                                text = "Adresa paketomata:",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                            Text(
+                                text = state.dropoffAddress,
+                                style = MaterialTheme.typography.bodyMedium
                             )
                             Spacer(modifier = Modifier.height(4.dp))
                             TextButton(onClick = { viewModel.clearLocker() }) {
@@ -175,15 +299,9 @@ fun CreateOrderScreen(
                             }
                         }
                     }
-                } else {
-                    Button(
-                        onClick = { navController.navigate("select_locker") },
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Text("Izaberi paketomat na mapi")
-                    }
                 }
             }
+
             if (state.error != null) {
                 Spacer(modifier = Modifier.height(12.dp))
                 Text(

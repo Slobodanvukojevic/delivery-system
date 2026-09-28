@@ -28,6 +28,8 @@ interface ApiService {
     @GET("api/orders/track")
     suspend fun trackOrdersByCode(@Query("code") code: String): List<OrderDto>
 
+    @GET("api/users/me")
+    suspend fun getMyProfile(): UserProfileDto
     @GET("api/locations/nearby")
     suspend fun getNearbyLocations(
         @Query("lat") lat: Double,

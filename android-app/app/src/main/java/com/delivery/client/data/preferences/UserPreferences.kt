@@ -55,7 +55,11 @@ class UserPreferences(private val context: Context) {
             prefs[FCM_TOKEN_KEY] = token
         }
     }
-
+    suspend fun updatePhone(newPhone: String) {
+        context.dataStore.edit { prefs ->
+            prefs[PHONE_KEY] = newPhone
+        }
+    }
     suspend fun getFcmToken(): String? =
         context.dataStore.data.map { it[FCM_TOKEN_KEY] }.first()
 }

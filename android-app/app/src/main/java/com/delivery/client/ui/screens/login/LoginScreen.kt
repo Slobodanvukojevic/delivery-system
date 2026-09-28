@@ -95,5 +95,8 @@ fun LoginScreen(
         TextButton(onClick = { navController.navigate("register") }) {
             Text("Nemate nalog? Registrujte se")
         }
+        TextButton(onClick = { navController.navigate("track_order") }) {
+            Text("Nastavi kao gost")
+        }
     }
 }
