@@ -56,7 +56,22 @@ public class OrderService {
         this.branchRepository = branchRepository;
         this.notificationClient = notificationClient;
     }
+    public List<OrderResponse> getOrdersByPhone(String phone) {
+        List<DeliveryOrder> asSender = orderRepository.findBySenderPhone(phone);
+        List<DeliveryOrder> asCustomer = orderRepository.findByCustomerPhone(phone);
 
+
+        List<DeliveryOrder> all = new java.util.ArrayList<>(asSender);
+        for (DeliveryOrder o : asCustomer) {
+            if (all.stream().noneMatch(x -> x.getId().equals(o.getId()))) {
+                all.add(o);
+            }
+        }
+
+        return all.stream()
+                .map(this::mapToResponse)
+                .collect(Collectors.toList());
+    }
     public OrderResponse createOrder(CreateOrderRequest request) {
         double price = BASE_PRICE + (PRICE_PER_KG * request.getWeight());
         String pickupCode = generatePickupCode();

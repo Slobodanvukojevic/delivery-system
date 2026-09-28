@@ -15,8 +15,8 @@ class OrderRepository @Inject constructor(
     suspend fun getMyOrders(): Result<List<OrderDto>> {
         return try {
             val phone = userPreferences.getPhone() ?: return Result.success(emptyList())
-            val response = apiService.trackOrders(phone)
-            Result.success(response.orders)
+            val orders = apiService.trackOrders(phone)
+            Result.success(orders)
         } catch (e: Exception) {
             Result.failure(e)
         }

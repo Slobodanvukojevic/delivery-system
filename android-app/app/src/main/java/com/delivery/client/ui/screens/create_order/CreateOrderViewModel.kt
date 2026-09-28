@@ -21,6 +21,8 @@ data class CreateOrderState(
     val pickupAddress: String = "",
     val dropoffAddress: String = "",
     val deliveryMethod: String = "HOME_DELIVERY",
+    val selectedLockerId: Long? = null,
+    val selectedLockerName: String = "",
     val isLoading: Boolean = false,
     val error: String? = null,
     val success: Boolean = false
@@ -52,6 +54,17 @@ class CreateOrderViewModel @Inject constructor(
     fun onDropoffAddressChange(v: String) { _state.value = _state.value.copy(dropoffAddress = v, error = null) }
     fun onDeliveryMethodChange(v: String) { _state.value = _state.value.copy(deliveryMethod = v, error = null) }
 
+    fun onLockerSelected(id: Long, name: String) {
+        _state.value = _state.value.copy(
+            selectedLockerId = id,
+            selectedLockerName = name
+        )
+    }
+
+    fun clearLocker() {
+        _state.value = _state.value.copy(selectedLockerId = null, selectedLockerName = "")
+    }
+
     fun submit() {
         val current = _state.value
 
@@ -62,8 +75,13 @@ class CreateOrderViewModel @Inject constructor(
             return
         }
 
+        if (current.deliveryMethod == "LOCKER_PICKUP" && current.selectedLockerId == null) {
+            _state.value = current.copy(error = "Izaberite paketomat")
+            return
+        }
+
         val weightValue = current.weight.toDoubleOrNull()
-        if ((weightValue == null) || (weightValue < 1) || (weightValue > 30)) {
+        if (weightValue == null || weightValue < 1 || weightValue > 30) {
             _state.value = current.copy(error = "Tezina mora biti izmedju 1 i 30 kg")
             return
         }
@@ -79,7 +97,8 @@ class CreateOrderViewModel @Inject constructor(
                     weight = weightValue,
                     pickupAddress = current.pickupAddress,
                     dropoffAddress = current.dropoffAddress,
-                    deliveryMethod = current.deliveryMethod
+                    deliveryMethod = current.deliveryMethod,
+                    selectedLockerId = current.selectedLockerId
                 )
             )
 

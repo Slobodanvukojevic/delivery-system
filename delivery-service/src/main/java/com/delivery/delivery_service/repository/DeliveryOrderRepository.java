@@ -15,6 +15,7 @@ public interface DeliveryOrderRepository extends JpaRepository<DeliveryOrder, Lo
 
     List<DeliveryOrder> findByCustomerPhone(String customerPhone);
 
+    List<DeliveryOrder> findBySenderPhone(String senderPhone);
     Optional<DeliveryOrder> findByPickupCode(String pickupCode);
 
     List<DeliveryOrder> findByAssignedCourierId(Long courierId);

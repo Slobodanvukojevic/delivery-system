@@ -100,6 +100,15 @@ fun HomeScreen(
             ) {
                 Text("Moje porudzbine")
             }
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            Button(
+                onClick = { navController.navigate("map") },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("Mapa paketomata")
+            }
         }
     }
 }

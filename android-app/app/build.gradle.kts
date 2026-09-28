@@ -81,4 +81,11 @@ dependencies {
     // Debug
     debugImplementation("androidx.compose.ui:ui-test-manifest")
     debugImplementation("androidx.compose.ui:ui-tooling")
+    // Google Maps Compose
+    implementation("com.google.maps.android:maps-compose:6.4.1")
+    implementation("com.google.android.gms:play-services-maps:19.0.0")
+    implementation("com.google.android.gms:play-services-location:21.3.0")
+
+// Permissions
+    implementation("com.google.accompanist:accompanist-permissions:0.36.0")
 }

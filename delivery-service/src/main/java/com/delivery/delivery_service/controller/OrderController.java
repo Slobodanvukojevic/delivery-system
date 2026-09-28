@@ -43,7 +43,10 @@ public class OrderController {
         }
         return ResponseEntity.ok(orderService.getAllOrders());
     }
-
+    @GetMapping("/track")
+    public ResponseEntity<List<OrderResponse>> trackOrders(@RequestParam String phone) {
+        return ResponseEntity.ok(orderService.getOrdersByPhone(phone));
+    }
     @GetMapping("/{id}")
     public ResponseEntity<OrderResponse> getOrderById(@PathVariable Long id) {
         return ResponseEntity.ok(orderService.getOrderById(id));

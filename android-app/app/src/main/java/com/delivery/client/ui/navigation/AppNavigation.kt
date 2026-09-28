@@ -9,9 +9,11 @@ import androidx.navigation.navArgument
 import com.delivery.client.ui.screens.create_order.CreateOrderScreen
 import com.delivery.client.ui.screens.home.HomeScreen
 import com.delivery.client.ui.screens.login.LoginScreen
+import com.delivery.client.ui.screens.map.MapScreen
 import com.delivery.client.ui.screens.my_orders.MyOrdersScreen
 import com.delivery.client.ui.screens.order_detail.OrderDetailScreen
 import com.delivery.client.ui.screens.register.RegisterScreen
+import com.delivery.client.ui.screens.select_locker.SelectLockerScreen
 
 @Composable
 fun AppNavigation() {
@@ -26,6 +28,8 @@ fun AppNavigation() {
         composable("home") { HomeScreen(navController) }
         composable("my_orders") { MyOrdersScreen(navController) }
         composable("create_order") { CreateOrderScreen(navController) }
+        composable("map") { MapScreen(navController) }
+        composable("select_locker") { SelectLockerScreen(navController) }
         composable(
             route = "order_detail/{id}",
             arguments = listOf(navArgument("id") { type = NavType.StringType })

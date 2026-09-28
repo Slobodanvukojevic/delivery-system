@@ -13,6 +13,8 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
+import androidx.navigation.compose.currentBackStackEntryAsState
+import kotlinx.coroutines.flow.MutableStateFlow
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -21,6 +23,24 @@ fun CreateOrderScreen(
     viewModel: CreateOrderViewModel = hiltViewModel()
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
+
+    // Slusaj rezultat iz SelectLockerScreen
+    val currentEntry by navController.currentBackStackEntryAsState()
+    val savedStateHandle = currentEntry?.savedStateHandle
+
+    val selectedLockerId by (savedStateHandle?.getStateFlow("selectedLockerId", -1L)
+        ?: MutableStateFlow(-1L)).collectAsStateWithLifecycle()
+    val selectedLockerName by (savedStateHandle?.getStateFlow("selectedLockerName", "")
+        ?: MutableStateFlow("")).collectAsStateWithLifecycle()
+
+    LaunchedEffect(selectedLockerId, selectedLockerName) {
+        if (selectedLockerId > 0 && selectedLockerName.isNotEmpty()) {
+            viewModel.onLockerSelected(selectedLockerId, selectedLockerName)
+            // ocisti da ne bi ponovo postavljalo
+            savedStateHandle?.remove<Long>("selectedLockerId")
+            savedStateHandle?.remove<String>("selectedLockerName")
+        }
+    }
 
     LaunchedEffect(state.success) {
         if (state.success) navController.popBackStack()
@@ -135,7 +155,35 @@ fun CreateOrderScreen(
                 )
                 Text("Preuzimanje u paketomatu")
             }
+            if (state.deliveryMethod == "LOCKER_PICKUP") {
+                Spacer(modifier = Modifier.height(12.dp))
 
+                if (state.selectedLockerId != null) {
+                    Card(modifier = Modifier.fillMaxWidth()) {
+                        Column(modifier = Modifier.padding(12.dp)) {
+                            Text(
+                                text = "Izabran paketomat:",
+                                style = MaterialTheme.typography.bodySmall
+                            )
+                            Text(
+                                text = state.selectedLockerName,
+                                style = MaterialTheme.typography.titleMedium
+                            )
+                            Spacer(modifier = Modifier.height(4.dp))
+                            TextButton(onClick = { viewModel.clearLocker() }) {
+                                Text("Promeni paketomat")
+                            }
+                        }
+                    }
+                } else {
+                    Button(
+                        onClick = { navController.navigate("select_locker") },
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text("Izaberi paketomat na mapi")
+                    }
+                }
+            }
             if (state.error != null) {
                 Spacer(modifier = Modifier.height(12.dp))
                 Text(

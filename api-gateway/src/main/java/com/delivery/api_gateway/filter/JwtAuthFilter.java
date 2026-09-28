@@ -38,13 +38,12 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
         String path = request.getRequestURI();
 
-        // Ako je putanja javna, samo prosledi dalje
         if (isPublicPath(path)) {
             chain.doFilter(request, response);
             return;
         }
 
-        // Inace, trazi JWT
+
         String authHeader = request.getHeader("Authorization");
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             log.warn("Zahtev bez Authorization header-a: {}", path);
@@ -64,7 +63,6 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
             log.debug("Token validan. userId={}, role={}, branchId={}", userId, role, branchId);
 
-            // Umotaj request da bi se dodali header-i
             HttpServletRequestWrapper wrapper = new HttpServletRequestWrapper(request) {
                 @Override
                 public String getHeader(String name) {
