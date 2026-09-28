@@ -14,7 +14,8 @@ import javax.inject.Inject
 data class MyOrdersState(
     val orders: List<OrderDto> = emptyList(),
     val isLoading: Boolean = false,
-    val error: String? = null
+    val error: String? = null,
+    val fromCache: Boolean = false
 )
 
 @HiltViewModel
@@ -26,22 +27,39 @@ class MyOrdersViewModel @Inject constructor(
     val state: StateFlow<MyOrdersState> = _state.asStateFlow()
 
     init {
+        observeCachedOrders()
         loadOrders()
+    }
+
+    private fun observeCachedOrders() {
+        viewModelScope.launch {
+            orderRepository.getCachedOrders().collect { orders ->
+                if (orders.isNotEmpty()) {
+                    _state.value = _state.value.copy(orders = orders)
+                }
+            }
+        }
     }
 
     fun loadOrders() {
         viewModelScope.launch {
             _state.value = _state.value.copy(isLoading = true, error = null)
-            val result = orderRepository.getMyOrders()
+
+            val result = orderRepository.syncOrders()
 
             result.fold(
-                onSuccess = { orders ->
-                    _state.value = MyOrdersState(orders = orders, isLoading = false)
+                onSuccess = {
+                    _state.value = _state.value.copy(
+                        isLoading = false,
+                        error = null,
+                        fromCache = false
+                    )
                 },
                 onFailure = { e ->
                     _state.value = _state.value.copy(
                         isLoading = false,
-                        error = e.message ?: "Greska pri ucitavanju"
+                        error = "Nema interneta. Prikazujem kesirane podatke.",
+                        fromCache = true
                     )
                 }
             )

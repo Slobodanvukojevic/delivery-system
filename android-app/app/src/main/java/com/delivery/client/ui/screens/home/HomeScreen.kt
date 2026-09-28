@@ -50,6 +50,7 @@ class HomeViewModel @Inject constructor(
 @Composable
 fun HomeScreen(
     navController: NavController,
+    isTablet: Boolean = false,
     viewModel: HomeViewModel = hiltViewModel()
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -72,42 +73,74 @@ fun HomeScreen(
             )
         }
     ) { padding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(padding)
-                .padding(24.dp)
-        ) {
-            Text(
-                text = "Dobrodosli, ${state.fullName}",
-                style = MaterialTheme.typography.headlineSmall
-            )
-
-            Spacer(modifier = Modifier.height(24.dp))
-
-            Button(
-                onClick = { navController.navigate("create_order") },
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text("Nova posiljka")
+        Row(modifier = Modifier.fillMaxSize()) {
+            // Tablet: NavigationRail sa leve strane
+            if (isTablet) {
+                NavigationRail {
+                    NavigationRailItem(
+                        selected = true,
+                        onClick = { },
+                        icon = { Text("H") },
+                        label = { Text("Pocetna") }
+                    )
+                    NavigationRailItem(
+                        selected = false,
+                        onClick = { navController.navigate("my_orders") },
+                        icon = { Text("P") },
+                        label = { Text("Porudzbine") }
+                    )
+                    NavigationRailItem(
+                        selected = false,
+                        onClick = { navController.navigate("create_order") },
+                        icon = { Text("N") },
+                        label = { Text("Nova") }
+                    )
+                    NavigationRailItem(
+                        selected = false,
+                        onClick = { navController.navigate("map") },
+                        icon = { Text("M") },
+                        label = { Text("Mapa") }
+                    )
+                }
             }
 
-            Spacer(modifier = Modifier.height(12.dp))
-
-            Button(
-                onClick = { navController.navigate("my_orders") },
-                modifier = Modifier.fillMaxWidth()
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(padding)
+                    .padding(24.dp)
             ) {
-                Text("Moje porudzbine")
-            }
+                Text(
+                    text = "Dobrodosli, ${state.fullName}",
+                    style = MaterialTheme.typography.headlineSmall
+                )
 
-            Spacer(modifier = Modifier.height(12.dp))
+                Spacer(modifier = Modifier.height(24.dp))
 
-            Button(
-                onClick = { navController.navigate("map") },
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text("Mapa paketomata")
+                Button(
+                    onClick = { navController.navigate("create_order") },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text("Nova posiljka")
+                }
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                Button(
+                    onClick = { navController.navigate("my_orders") },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text("Moje porudzbine")
+                }
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                Button(
+                    onClick = { navController.navigate("map") },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text("Mapa paketomata")
+                }
             }
         }
     }

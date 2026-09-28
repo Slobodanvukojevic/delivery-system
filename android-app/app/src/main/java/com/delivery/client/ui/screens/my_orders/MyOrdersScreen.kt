@@ -7,19 +7,35 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.delivery.client.data.remote.dto.OrderDto
+import com.delivery.client.utils.ShakeDetector
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MyOrdersScreen(
     navController: NavController,
+    isTablet: Boolean = false,
     viewModel: MyOrdersViewModel = hiltViewModel()
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
+    val context = LocalContext.current
+
+    // Shake detector
+    DisposableEffect(Unit) {
+        val shakeDetector = ShakeDetector(context) {
+            viewModel.loadOrders()
+        }
+        shakeDetector.start()
+
+        onDispose {
+            shakeDetector.stop()
+        }
+    }
 
     Scaffold(
         topBar = {
@@ -38,48 +54,111 @@ fun MyOrdersScreen(
             )
         }
     ) { padding ->
-        Box(
+        Row(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
         ) {
-            when {
-                state.isLoading -> {
-                    CircularProgressIndicator(
-                        modifier = Modifier.align(Alignment.Center)
+            // Tablet: NavigationRail sa leve strane
+            if (isTablet) {
+                NavigationRail {
+                    NavigationRailItem(
+                        selected = false,
+                        onClick = { navController.navigate("home") },
+                        icon = { Text("H") },
+                        label = { Text("Pocetna") }
+                    )
+                    NavigationRailItem(
+                        selected = true,
+                        onClick = { },
+                        icon = { Text("P") },
+                        label = { Text("Porudzbine") }
+                    )
+                    NavigationRailItem(
+                        selected = false,
+                        onClick = { navController.navigate("create_order") },
+                        icon = { Text("N") },
+                        label = { Text("Nova") }
+                    )
+                    NavigationRailItem(
+                        selected = false,
+                        onClick = { navController.navigate("map") },
+                        icon = { Text("M") },
+                        label = { Text("Mapa") }
                     )
                 }
+            }
 
-                state.error != null -> {
-                    Text(
-                        text = state.error!!,
-                        color = MaterialTheme.colorScheme.error,
-                        modifier = Modifier
-                            .align(Alignment.Center)
-                            .padding(24.dp)
-                    )
-                }
+            // Glavni sadrzaj
+            Column(modifier = Modifier.fillMaxSize()) {
 
-                state.orders.isEmpty() -> {
-                    Text(
-                        text = "Nema porudzbina",
-                        modifier = Modifier
-                            .align(Alignment.Center)
-                            .padding(24.dp)
-                    )
-                }
-
-                else -> {
-                    LazyColumn(
-                        modifier = Modifier.fillMaxSize(),
-                        contentPadding = PaddingValues(16.dp),
-                        verticalArrangement = Arrangement.spacedBy(12.dp)
+                if (state.fromCache) {
+                    Surface(
+                        color = MaterialTheme.colorScheme.tertiaryContainer,
+                        modifier = Modifier.fillMaxWidth()
                     ) {
-                        items(state.orders) { order ->
-                            OrderCard(
-                                order = order,
-                                onClick = { navController.navigate("order_detail/${order.id}") }
+                        Text(
+                            text = "Offline mode - prikazujem kesirane podatke",
+                            modifier = Modifier.padding(12.dp),
+                            style = MaterialTheme.typography.bodySmall
+                        )
+                    }
+                }
+
+                Box(modifier = Modifier.fillMaxSize()) {
+                    when {
+                        state.isLoading && state.orders.isEmpty() -> {
+                            CircularProgressIndicator(
+                                modifier = Modifier.align(Alignment.Center)
                             )
+                        }
+
+                        state.error != null && state.orders.isEmpty() -> {
+                            Column(
+                                modifier = Modifier
+                                    .align(Alignment.Center)
+                                    .padding(24.dp),
+                                horizontalAlignment = Alignment.CenterHorizontally
+                            ) {
+                                Text(
+                                    text = state.error!!,
+                                    color = MaterialTheme.colorScheme.error
+                                )
+                                Spacer(modifier = Modifier.height(16.dp))
+                                Text(
+                                    text = "Protresti uredjaj za osvezavanje",
+                                    style = MaterialTheme.typography.bodySmall
+                                )
+                            }
+                        }
+
+                        state.orders.isEmpty() -> {
+                            Column(
+                                modifier = Modifier.align(Alignment.Center),
+                                horizontalAlignment = Alignment.CenterHorizontally
+                            ) {
+                                Text("Nema porudzbina")
+                                Spacer(modifier = Modifier.height(8.dp))
+                                Text(
+                                    text = "Protresti za osvezavanje",
+                                    style = MaterialTheme.typography.bodySmall
+                                )
+                            }
+                        }
+
+                        else -> {
+                            LazyColumn(
+                                modifier = Modifier.fillMaxSize(),
+                                contentPadding = PaddingValues(16.dp),
+                                verticalArrangement = Arrangement.spacedBy(12.dp)
+                            ) {
+                                items(state.orders) { order ->
+                                    OrderCard(
+                                        order = order,
+                                        onClick = { navController.navigate("order_detail/${order.id}") }
+                                    )
+                                }
+                            }
                         }
                     }
                 }

@@ -1,5 +1,7 @@
 package com.delivery.client.ui.navigation
 
+import androidx.compose.material3.windowsizeclass.WindowSizeClass
+import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -16,8 +18,10 @@ import com.delivery.client.ui.screens.register.RegisterScreen
 import com.delivery.client.ui.screens.select_locker.SelectLockerScreen
 
 @Composable
-fun AppNavigation() {
+fun AppNavigation(windowSizeClass: WindowSizeClass) {
     val navController = rememberNavController()
+
+    val isTablet = windowSizeClass.widthSizeClass == WindowWidthSizeClass.Expanded
 
     NavHost(
         navController = navController,
@@ -25,8 +29,8 @@ fun AppNavigation() {
     ) {
         composable("login") { LoginScreen(navController) }
         composable("register") { RegisterScreen(navController) }
-        composable("home") { HomeScreen(navController) }
-        composable("my_orders") { MyOrdersScreen(navController) }
+        composable("home") { HomeScreen(navController, isTablet) }
+        composable("my_orders") { MyOrdersScreen(navController, isTablet) }
         composable("create_order") { CreateOrderScreen(navController) }
         composable("map") { MapScreen(navController) }
         composable("select_locker") { SelectLockerScreen(navController) }

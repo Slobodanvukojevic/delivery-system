@@ -3,6 +3,7 @@ plugins {
     id("org.jetbrains.kotlin.plugin.compose")
     id("com.google.dagger.hilt.android")
     id("com.google.devtools.ksp")
+    id("com.google.gms.google-services")
 }
 
 android {
@@ -88,4 +89,16 @@ dependencies {
 
 // Permissions
     implementation("com.google.accompanist:accompanist-permissions:0.36.0")
+// Room
+    implementation("androidx.room:room-runtime:2.7.1")
+    implementation("androidx.room:room-ktx:2.7.1")
+    ksp("androidx.room:room-compiler:2.7.1")
+
+// WorkManager
+    implementation("androidx.work:work-runtime-ktx:2.9.1")
+    implementation("androidx.hilt:hilt-work:1.2.0")
+    ksp("androidx.hilt:hilt-compiler:1.2.0")
+    implementation(platform("com.google.firebase:firebase-bom:34.19.0"))
+// Compose WindowSizeClass
+    implementation("androidx.compose.material3:material3-window-size-class:1.3.1")
 }
